@@ -14,10 +14,12 @@ import androidx.annotation.Nullable;
 
 import java.security.Provider;
 
-public class FloatingViewService extends Service implements View.OnClickListener{
+public class FloatingViewService extends Service implements View.OnClickListener {
 
     private View floatingWidget;
     private WindowManager windowManager;
+    View collapsedView;
+    View expandedView;
 
     @Override
     public void onCreate() {
@@ -41,9 +43,23 @@ public class FloatingViewService extends Service implements View.OnClickListener
 
         windowManager.addView(floatingWidget, parameters);
 
-        final View collapsedView = floatingWidget.findViewById(R.id.collapsed_view);
+        collapsedView = floatingWidget.findViewById(R.id.collapsed_view);
         ImageView collapsedCloseButton = (ImageView) floatingWidget.findViewById(R.id.collapsed_closed_button);
-        collapsedCloseButton.setOnClickListener(FloatingViewService.this);
+        collapsedCloseButton.setOnClickListener(this);
+
+        expandedView = floatingWidget.findViewById(R.id.expanded_view);
+        ImageView lionImage = (ImageView) floatingWidget.findViewById(R.id.lionImage);
+        lionImage.setOnClickListener(this);
+        ImageView previousButton = (ImageView) floatingWidget.findViewById(R.id.btnPrevious);
+        previousButton.setOnClickListener(this);
+        ImageView leopardImage = (ImageView) floatingWidget.findViewById(R.id.leopardImage);
+        leopardImage.setOnClickListener(this);
+        ImageView nextButton = (ImageView) floatingWidget.findViewById(R.id.btnNext);
+        nextButton.setOnClickListener(this);
+        ImageView expandedCloseButton = (ImageView) floatingWidget.findViewById(R.id.close_button_expanded);
+        expandedCloseButton.setOnClickListener(this);
+        ImageView openButton = (ImageView) floatingWidget.findViewById(R.id.open_button);
+        openButton.setOnClickListener(this);
     }
 
     @Nullable
@@ -55,8 +71,26 @@ public class FloatingViewService extends Service implements View.OnClickListener
     @Override
     public void onClick(View view) {
 
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.collapsed_closed_button:
+                stopSelf();
+                break;
+            case R.id.lionImage:
+                break;
+            case R.id.btnPrevious:
+                break;
+            case R.id.leopardImage:
+                break;
+            case R.id.btnNext:
+                break;
+            case R.id.close_button_expanded:
+                collapsedView.setVisibility(View.VISIBLE);
+                expandedView.setVisibility(View.GONE);
+                break;
+            case R.id.open_button:
+                Intent openAppIntent = new Intent(this, MainActivity.class);
+                openAppIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(openAppIntent);
                 stopSelf();
                 break;
         }
