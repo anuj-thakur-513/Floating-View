@@ -6,6 +6,7 @@ import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -14,12 +15,14 @@ import androidx.annotation.Nullable;
 
 import java.security.Provider;
 
-public class FloatingViewService extends Service implements View.OnClickListener {
+public class FloatingViewService extends Service implements View.OnClickListener, View.OnTouchListener {
 
     private View floatingWidget;
     private WindowManager windowManager;
-    View collapsedView;
-    View expandedView;
+    private View collapsedView;
+    private View expandedView;
+    private View rootView;
+    private WindowManager.LayoutParams wdParams;
 
     @Override
     public void onCreate() {
@@ -29,7 +32,7 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 .inflate(R.layout.floating_view_layout, null);
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        final WindowManager.LayoutParams parameters = new WindowManager.LayoutParams(
+        wdParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -37,11 +40,11 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 PixelFormat.TRANSLUCENT
         );
 
-        parameters.gravity = Gravity.TOP | Gravity.LEFT;
-        parameters.x = 200;
-        parameters.y = 200;
+        wdParams.gravity = Gravity.TOP | Gravity.LEFT;
+        wdParams.x = 200;
+        wdParams.y = 200;
 
-        windowManager.addView(floatingWidget, parameters);
+        windowManager.addView(floatingWidget, wdParams);
 
         collapsedView = floatingWidget.findViewById(R.id.collapsed_view);
         ImageView collapsedCloseButton = (ImageView) floatingWidget.findViewById(R.id.collapsed_closed_button);
@@ -60,6 +63,9 @@ public class FloatingViewService extends Service implements View.OnClickListener
         expandedCloseButton.setOnClickListener(this);
         ImageView openButton = (ImageView) floatingWidget.findViewById(R.id.open_button);
         openButton.setOnClickListener(this);
+
+        rootView = floatingWidget.findViewById(R.id.root_view);
+        rootView.setOnTouchListener(this);
     }
 
     @Nullable
@@ -95,5 +101,45 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 break;
         }
 
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        int startXPos = 0, startYPos = 0;
+        float startTouchX = 0, startTouchY = 0;
+
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                // Access the start position of the widget
+                startXPos = wdParams.x;
+                startYPos = wdParams.y;
+                // Access the starting touch position of the widget
+                startTouchX = event.getRawX();
+                startTouchY = event.getRawY();
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                int startToEndXDifference = (int) (event.getRawX() - startTouchX);
+                int startToEndYDifference = (int) (event.getRawY() - startTouchY);
+
+                if (startToEndXDifference < 5 && startToEndYDifference < 5){
+                    if (isWidgetCollapsed()){
+                        collapsedView.setVisibility(View.GONE);
+                        expandedView.setVisibility(View.VISIBLE);
+                    }
+                }
+                return true;
+
+            case MotionEvent.ACTION_MOVE:
+                wdParams.x = startXPos + (int) (event.getRawX() - startTouchX);
+                wdParams.y = startYPos + (int) (event.getRawY() - startTouchY);
+                windowManager.updateViewLayout(floatingWidget, wdParams);
+                return true;
+        }
+        return false;
+    }
+
+    private boolean isWidgetCollapsed(){
+        return collapsedView.getVisibility() == View.VISIBLE;
     }
 }
