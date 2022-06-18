@@ -142,4 +142,12 @@ public class FloatingViewService extends Service implements View.OnClickListener
     private boolean isWidgetCollapsed(){
         return collapsedView.getVisibility() == View.VISIBLE;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (floatingWidget != null){
+            windowManager.removeView(floatingWidget);
+        }
+    }
 }
