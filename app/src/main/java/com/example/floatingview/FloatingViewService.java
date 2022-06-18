@@ -8,12 +8,13 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
 import java.security.Provider;
 
-public class FloatingViewService extends Service {
+public class FloatingViewService extends Service implements View.OnClickListener{
 
     private View floatingWidget;
     private WindowManager windowManager;
@@ -39,6 +40,10 @@ public class FloatingViewService extends Service {
         parameters.y = 200;
 
         windowManager.addView(floatingWidget, parameters);
+
+        final View collapsedView = floatingWidget.findViewById(R.id.collapsed_view);
+        ImageView collapsedCloseButton = (ImageView) floatingWidget.findViewById(R.id.collapsed_closed_button);
+        collapsedCloseButton.setOnClickListener(FloatingViewService.this);
     }
 
     @Nullable
@@ -47,4 +52,14 @@ public class FloatingViewService extends Service {
         return null;
     }
 
+    @Override
+    public void onClick(View view) {
+
+        switch (view.getId()){
+            case R.id.collapsed_closed_button:
+                stopSelf();
+                break;
+        }
+
+    }
 }
