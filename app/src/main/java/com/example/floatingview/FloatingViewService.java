@@ -24,6 +24,9 @@ public class FloatingViewService extends Service implements View.OnClickListener
     private View rootView;
     private WindowManager.LayoutParams wdParams;
 
+    int startXPos, startYPos;
+    float startTouchX , startTouchY;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -105,9 +108,6 @@ public class FloatingViewService extends Service implements View.OnClickListener
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        int startXPos = 0, startYPos = 0;
-        float startTouchX = 0, startTouchY = 0;
-
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 // Access the start position of the widget
